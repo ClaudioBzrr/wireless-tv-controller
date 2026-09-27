@@ -82,6 +82,10 @@
     return this._registered && this._ws && this._ws.readyState === 1;
   };
 
+  SSAPClient.prototype._isOpen = function () {
+    return !!(this._ws && this._ws.readyState === 1);
+  };
+
   SSAPClient.prototype.url = function (secure, port) {
     var s = (secure === undefined ? this.secure : secure);
     var p = port || this.port || (s ? 3001 : 3000);
@@ -91,15 +95,18 @@
   /* ---------------- conexão ---------------- */
 
   SSAPClient.prototype._transportCandidates = function () {
+    var pageSecure = typeof location !== 'undefined' && location.protocol === 'https:';
     var transports;
     if (this.port) {
       transports = [{ secure: !!this.secure, port: this.port }];
+    } else if (pageSecure) {
+      // Página HTTPS: o proxy ws:// é bloqueado como conteúdo misto e a
+      // conexão direta é recusada pela TV (Origin), então o caminho útil é
+      // wss://3001 (com o certificado da TV aceito uma vez). ws://3000 fica
+      // como última alternativa.
+      transports = [{ secure: true, port: 3001 }, { secure: false, port: 3000 }];
     } else {
-      // A porta 3000 (sem TLS) é tentada primeiro: em TVs mais antigas ela
-      // funciona sem nenhum certificado. Em página HTTPS o navegador bloqueia
-      // ws:// como conteúdo misto, MAS libera quando o destino é um IP privado
-      // literal e o Local Network Access está autorizado (política
-      // LocalNetworkAllowedForUrls) — por isso vale tentar mesmo assim.
+      // Página local em HTTP: a porta 3000 funciona sem certificado nenhum.
       transports = [{ secure: false, port: 3000 }, { secure: true, port: 3001 }];
     }
 
@@ -351,13 +358,18 @@
   SSAPClient.prototype._handshake = async function () {
     var self = this;
 
+    if (!this._isOpen()) throw new Error('A TV encerrou a conexão antes do registro (filtro de Origin).');
+
     try {
-      var helloWait = this._createWaiter(function (m) { return m.type === 'hello'; }, 4000, 'hello');
+      var helloWait = this._createWaiter(function (m) { return m.type === 'hello'; }, 2000, 'hello');
       this._send({ id: 'hello', type: 'hello', payload: {} });
       await helloWait;
     } catch (e) {
+      if (!this._isOpen()) throw new Error('A TV encerrou a conexão antes do registro (filtro de Origin).');
       this._log('Sem resposta ao hello (normal em TVs mais antigas).', 'debug');
     }
+
+    if (!this._isOpen()) throw new Error('A TV encerrou a conexão antes do registro (filtro de Origin).');
 
     try {
       var info = await this.request('system/getSystemInfo', {}, 5000);
@@ -368,6 +380,8 @@
     } catch (e) {
       this._log('getSystemInfo indisponível antes do pareamento (TV antiga).', 'debug');
     }
+
+    if (!this._isOpen()) throw new Error('A TV encerrou a conexão antes do registro (filtro de Origin).');
 
     var payload = { forcePairing: false, pairingType: 'PROMPT', manifest: NS.SSAP_MANIFEST };
     if (this.clientKey) payload['client-key'] = this.clientKey;

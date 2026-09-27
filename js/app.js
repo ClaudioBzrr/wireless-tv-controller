@@ -358,9 +358,9 @@
     var screen = $('#screen-connect');
     var hero = screen.querySelector('.hero');
     var card = el('div', { class: 'warn-card' }, [
-      el('strong', { text: 'Atenção: este navegador pode bloquear a conexão com a TV' }),
-      el('p', { text: 'Chrome/Edge 142+ não permitem que páginas públicas (GitHub Pages) falem com aparelhos da sua rede local, e para WebSocket não existe aviso de permissão — a conexão falha em silêncio. Enquanto estiver por aqui, o controle pode não conectar.' }),
-      el('p', { text: 'Modo local (recomendado): rode “node serve.js” na pasta do projeto e abra o endereço http://SEU-IP:8080 no computador ou no celular.' })
+      el('strong', { text: 'Atenção: esta página publicada não controla a TV no Chrome/Edge' }),
+      el('p', { text: 'Chrome/Edge bloqueiam conexões de páginas públicas (GitHub Pages) para a rede local, e a própria TV recusa conexões diretas vindas de páginas web (filtro de origem, código 1008). Não existe ajuste no navegador que resolva as duas coisas — o caminho é o modo local.' }),
+      el('p', { text: 'Modo local: rode “node serve.js” na pasta do projeto e abra o endereço http://SEU-IP:8080 no computador ou no celular.' })
     ]);
     if (hero && hero.nextSibling) screen.insertBefore(card, hero.nextSibling);
     else screen.insertBefore(card, screen.firstChild);
@@ -396,7 +396,7 @@
           body.appendChild(localModeInstructions());
           body.appendChild(el('p', {
             class: 'hint muted small',
-            text: 'Alternativas: usar Firefox (ainda não aplica essa restrição) ou configurar a política "LocalNetworkAllowedForUrls" para ' + location.origin + ' (avançado, exige editar o registro do Windows e reiniciar o navegador).'
+            text: 'Não existe ajuste no navegador que libere esta página publicada para TVs LG: autorizar a rede local (política LocalNetworkAllowedForUrls) faz o Chrome permitir a conexão, mas a TV a recusa por causa do cabeçalho Origin (1008); o proxy que resolveria isso é bloqueado pelo navegador (verificado no net-log: ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS).'
           }));
           body.appendChild(el('p', { class: 'hint', text: 'Se você já está no modo local e ainda falha, o motivo mais provável é o certificado da TV:' }));
           body.appendChild(certSteps(tv));
@@ -947,13 +947,14 @@
           el('summary', { text: 'O site publicado (GitHub Pages) não conecta no Chrome/Edge' }),
           el('p', { text: 'Desde o Chrome 142 (out/2025) o navegador bloqueia conexões de sites públicos para a rede local ("Local Network Access"). Em WebSocket não existe aviso de permissão: a conexão falha em silêncio. Isso não é um problema da TV nem do app.' }),
           el('p', { text: 'Solução recomendada: usar o app em modo local — na pasta do projeto rode "node serve.js" (ou dê dois cliques em iniciar-servidor.cmd) e abra o endereço http://SEU-IP:8080 no computador ou celular. A página passa a ser local, então o navegador permite falar com a TV.' }),
-          el('p', { text: 'Alternativas: usar Firefox (ainda não aplica essa regra) ou configurar a política "LocalNetworkAllowedForUrls" para ' + location.origin + ' — veja o tópico abaixo.' })
+          el('p', { text: 'Alternativas: usar Firefox (ainda não aplica essa regra) ou a política abaixo — que só ajuda se a sua TV aceitar conexões diretas do navegador.' })
         ]));
         body.appendChild(el('details', { class: 'help' }, [
           el('summary', { text: 'Liberar o site publicado no Chrome/Edge (avançado)' }),
-          el('p', { text: 'O navegador só deixa uma página pública falar com a rede local se a origem estiver numa política de exceção. No Windows, rode os comandos abaixo (Prompt de Comando ou PowerShell, sem precisar de administrador) e reinicie o navegador por completo:' }),
-          el('pre', { class: 'code-block', text: 'reg add "HKCU\\Software\\Policies\\Google\\Chrome\\LocalNetworkAllowedForUrls" /v 1 /t REG_SZ /d "' + location.origin + '" /f\nreg add "HKCU\\Software\\Policies\\Microsoft\\Edge\\LocalNetworkAllowedForUrls" /v 1 /t REG_SZ /d "' + location.origin + '" /f' }),
-          el('p', { text: 'Confira em chrome://policy (ou edge://policy). O navegador passa a mostrar “gerenciado pela sua organização” — é só o efeito da política e a chave pode ser apagada depois. No Chrome do Android isso não é configurável pelo usuário.' })
+          el('p', { text: 'IMPORTANTE: na maioria das TVs LG isto não resolve — a TV recusa conexões diretas de páginas web com o erro 1008 (filtro de Origin) e o proxy necessário é bloqueado pelo navegador. Só vale a pena se você já viu a conexão direta funcionar (TVs que não filtram a origem).' }),
+          el('p', { text: 'No Windows, abra o Prompt de Comando como Administrador, rode os comandos abaixo e feche todas as janelas do navegador:' }),
+          el('pre', { class: 'code-block', text: 'reg add "HKLM\\SOFTWARE\\Policies\\Google\\Chrome\\LocalNetworkAllowedForUrls" /v 1 /t REG_SZ /d "' + location.origin + '" /f\nreg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge\\LocalNetworkAllowedForUrls" /v 1 /t REG_SZ /d "' + location.origin + '" /f' }),
+          el('p', { text: 'Confira em chrome://policy (ou edge://policy). O navegador passa a mostrar “gerenciado pela sua organização” — é só o efeito da política. Para remover: reg delete "HKLM\\SOFTWARE\\Policies\\Google\\Chrome" /f (e o equivalente do Edge), como Administrador. No Chrome do Android isso não é configurável pelo usuário.' })
         ]));
         body.appendChild(el('details', { class: 'help' }, [
           el('summary', { text: 'A TV não conecta / erro de certificado' }),
