@@ -91,16 +91,15 @@
   /* ---------------- conexão ---------------- */
 
   SSAPClient.prototype._transportCandidates = function () {
-    var pageSecure = typeof location !== 'undefined' && location.protocol === 'https:';
     var transports;
     if (this.port) {
       transports = [{ secure: !!this.secure, port: this.port }];
-    } else if (pageSecure) {
-      // Página em HTTPS: ws:// seria bloqueado como conteúdo misto.
-      transports = [{ secure: true, port: 3001 }];
     } else {
-      // Página local em HTTP: tenta a porta sem TLS (mais compatível, sem
-      // certificado) e depois a TLS.
+      // A porta 3000 (sem TLS) é tentada primeiro: em TVs mais antigas ela
+      // funciona sem nenhum certificado. Em página HTTPS o navegador bloqueia
+      // ws:// como conteúdo misto, MAS libera quando o destino é um IP privado
+      // literal e o Local Network Access está autorizado (política
+      // LocalNetworkAllowedForUrls) — por isso vale tentar mesmo assim.
       transports = [{ secure: false, port: 3000 }, { secure: true, port: 3001 }];
     }
 

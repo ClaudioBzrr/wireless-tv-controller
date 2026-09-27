@@ -947,7 +947,13 @@
           el('summary', { text: 'O site publicado (GitHub Pages) não conecta no Chrome/Edge' }),
           el('p', { text: 'Desde o Chrome 142 (out/2025) o navegador bloqueia conexões de sites públicos para a rede local ("Local Network Access"). Em WebSocket não existe aviso de permissão: a conexão falha em silêncio. Isso não é um problema da TV nem do app.' }),
           el('p', { text: 'Solução recomendada: usar o app em modo local — na pasta do projeto rode "node serve.js" (ou dê dois cliques em iniciar-servidor.cmd) e abra o endereço http://SEU-IP:8080 no computador ou celular. A página passa a ser local, então o navegador permite falar com a TV.' }),
-          el('p', { text: 'Alternativas: usar Firefox (ainda não aplica essa regra) ou configurar a política "LocalNetworkAllowedForUrls" para ' + location.origin + ' (avançado).' })
+          el('p', { text: 'Alternativas: usar Firefox (ainda não aplica essa regra) ou configurar a política "LocalNetworkAllowedForUrls" para ' + location.origin + ' — veja o tópico abaixo.' })
+        ]));
+        body.appendChild(el('details', { class: 'help' }, [
+          el('summary', { text: 'Liberar o site publicado no Chrome/Edge (avançado)' }),
+          el('p', { text: 'O navegador só deixa uma página pública falar com a rede local se a origem estiver numa política de exceção. No Windows, rode os comandos abaixo (Prompt de Comando ou PowerShell, sem precisar de administrador) e reinicie o navegador por completo:' }),
+          el('pre', { class: 'code-block', text: 'reg add "HKCU\\Software\\Policies\\Google\\Chrome\\LocalNetworkAllowedForUrls" /v 1 /t REG_SZ /d "' + location.origin + '" /f\nreg add "HKCU\\Software\\Policies\\Microsoft\\Edge\\LocalNetworkAllowedForUrls" /v 1 /t REG_SZ /d "' + location.origin + '" /f' }),
+          el('p', { text: 'Confira em chrome://policy (ou edge://policy). O navegador passa a mostrar “gerenciado pela sua organização” — é só o efeito da política e a chave pode ser apagada depois. No Chrome do Android isso não é configurável pelo usuário.' })
         ]));
         body.appendChild(el('details', { class: 'help' }, [
           el('summary', { text: 'A TV não conecta / erro de certificado' }),
