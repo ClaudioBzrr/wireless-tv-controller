@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="pt-BR" data-build="2026-09-26">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>Controle TV — LG webOS</title>
+<meta name="description" content="Controle remoto para TVs LG webOS direto do navegador. Sem anúncios, sem backend, sem nuvem.">
+<meta name="theme-color" content="#0b0e13">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Controle TV">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.6 6.8a8 8 0 1 0 10.8 0"/></symbol>
+  <symbol id="i-screen" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12.5" rx="2"/><path d="M8.5 21h7M12 17v4"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6.5 10.5V20h11v-9.5"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="1.3" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-exit" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9.5v5h3l5 4v-13l-5 4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="8" y="5" width="3" height="14" rx=".8" fill="currentColor" stroke="none"/><rect x="13" y="5" width="3" height="14" rx=".8" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.6" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-rewind" viewBox="0 0 24 24"><path d="M11.5 6.5v11L3.5 12z" fill="currentColor"/><path d="M20.5 6.5v11L12.5 12z" fill="currentColor"/></symbol>
+  <symbol id="i-ffwd" viewBox="0 0 24 24"><path d="M12.5 6.5v11l8-5.5z" fill="currentColor"/><path d="M3.5 6.5v11l8-5.5z" fill="currentColor"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><path d="M9.5 4.5 7.5 19.5M16.5 4.5l-2 15M4.5 9h15M3.5 15h15"/></symbol>
+  <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 11h.5M10.5 11h.5M14 11h.5M17 11h.5M8 14h8"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.6"/><rect x="13" y="13" width="7" height="7" rx="1.6"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 6.5h8M16.5 6.5H20M4 12h2.5M11 12h9M4 17.5h9M17.5 17.5H20"/><circle cx="14.2" cy="6.5" r="2.2"/><circle cx="8.6" cy="12" r="2.2"/><circle cx="15.2" cy="17.5" r="2.2"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.3 2.4c-.7.3-.9.8-.9 1.6"/><circle cx="12" cy="17" r="1.2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.2"/><path d="M15.6 15.6 20.5 20.5"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M3.5 12 21 4.5l-6.5 15-3-6.2z"/></symbol>
+  <symbol id="i-backspace" viewBox="0 0 24 24"><path d="M9 5.5h10.5a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9L3 12z"/><path d="M13 9.5l5 5M18 9.5l-5 5"/></symbol>
+  <symbol id="i-enter" viewBox="0 0 24 24"><path d="M20 6v5.5a2 2 0 0 1-2 2H5"/><path d="M9 9.5 5 13.5l4 4"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4.5V9h-4.5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5.5a1.5 1.5 0 0 1 1.5-1.5H15"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9.5 7V4.8h5V7M6.8 7l1 13h8.4l1-13"/></symbol>
+  <symbol id="i-install" viewBox="0 0 24 24"><path d="M12 4v10.5M8 10.5l4 4 4-4M4 19.5h16"/></symbol>
+  <symbol id="i-tv" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12.5" rx="2"/><path d="M8.5 21h7M12 17v4"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13.5a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1.2 1.2"/><path d="M14 10.5a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1.2-1.2"/></symbol>
+  <symbol id="i-unlink" viewBox="0 0 24 24"><path d="M9 15l-1.5 1.5a4 4 0 0 1-5.7-5.7L5 8.5"/><path d="M15 9l1.5-1.5a4 4 0 0 1 5.7 5.7L20 15.5"/><path d="M4 4l16 16"/></symbol>
+</svg>
+
+<div id="app">
+
+  <!-- ===================== Tela: conectar ===================== -->
+  <section id="screen-connect" class="screen">
+    <header class="hero">
+      <div class="hero-icon"><svg class="ic big"><use href="#i-tv"/></svg></div>
+      <h1>Controle TV</h1>
+      <p class="muted">Controle remoto para TVs LG webOS direto do navegador.<br>Sem anúncios, sem nuvem, sem backend.</p>
+    </header>
+
+    <div id="connect-tvs" class="tv-list"></div>
+
+    <div class="connect-actions">
+      <button id="btn-add-tv" class="btn primary block">
+        <svg class="ic"><use href="#i-plus"/></svg><span>Adicionar TV</span>
+      </button>
+      <button id="btn-install" class="btn block hidden">
+        <svg class="ic"><use href="#i-install"/></svg><span>Instalar como app</span>
+      </button>
+    </div>
+
+    <details class="help">
+      <summary>Como descobrir o IP da TV</summary>
+      <p>Na TV: <strong>Configurações (engrenagem)</strong> → <strong>Conexão</strong> → <strong>Conexão de rede</strong> (Wi‑Fi ou Ethernet) → <strong>Configurações avançadas</strong>. O endereço IP aparece ali, algo como <code>192.168.0.123</code>. O computador/celular precisa estar na mesma rede da TV.</p>
+    </details>
+    <details class="help">
+      <summary>A TV vai pedir para aceitar o controle</summary>
+      <p>Na primeira conexão aparece um aviso na TV pedindo permissão. Escolha <strong>“Sim/Aceitar”</strong>. O pareamento fica salvo neste navegador, então isso acontece só uma vez por aparelho.</p>
+    </details>
+    <details class="help">
+      <summary>A conexão falha com erro de certificado (site HTTPS)</summary>
+      <p>Este site é servido por HTTPS e a TV usa um certificado próprio. O navegador precisa confiar nele uma vez: abra <code>https://IP-DA-TV:3001</code> em outra aba e avance em <strong>Avançado → Continuar mesmo assim</strong>. Depois volte aqui e conecte de novo.</p>
+      <p>Se a sua TV for mais antiga e ainda aceitar conexões sem TLS, você também pode servir esta pasta por HTTP local (<code>npx serve</code> ou <code>python -m http.server</code>) e conectar na porta 3000.</p>
+    </details>
+    <details class="help">
+      <summary>Não consigo ligar a TV pelo navegador</summary>
+      <p>O navegador não consegue enviar os “pacotes mágicos” de Wake‑on‑LAN (UDP). Se a TV estiver em standby com <strong>Quick Start+</strong> ativado, o botão de ligar pode funcionar; caso contrário, ligue pela TV ou pelo controle físico. Desligar sempre funciona.</p>
+    </details>
+    <details class="help">
+      <summary>Compatibilidade</summary>
+      <p>Chrome/Edge no desktop ou Android funcionam melhor (aceitam o certificado da TV). Safari/iPhone costuma bloquear conexões com certificado próprio — nesse caso use o modo HTTP local.</p>
+    </details>
+
+    <p class="footer-note muted small">Seus dados (IP, nome da TV e chave de pareamento) ficam apenas neste navegador.</p>
+  </section>
+
+  <!-- ===================== Tela: controle ===================== -->
+  <section id="screen-remote" class="screen hidden">
+    <header class="topbar">
+      <button id="btn-change-tv" class="icon-btn" title="Trocar de TV"><svg class="ic"><use href="#i-back"/></svg></button>
+      <div class="status">
+        <span id="status-dot" class="dot idle"></span>
+        <div class="status-text">
+          <strong id="tv-name">TV</strong>
+          <span id="tv-sub" class="muted small">Desconectado</span>
+        </div>
+      </div>
+      <button id="btn-help" class="icon-btn" title="Ajuda e diagnóstico"><svg class="ic"><use href="#i-help"/></svg></button>
+      <button id="btn-settings" class="icon-btn" title="Ajustes"><svg class="ic"><use href="#i-settings"/></svg></button>
+    </header>
+
+    <main class="tab-panels">
+
+      <section id="tab-remote" class="tab-panel">
+        <div class="quick-row top">
+          <button class="btn round accent" data-action="power" title="Desligar / ligar">
+            <svg class="ic"><use href="#i-power"/></svg>
+          </button>
+          <button class="btn round" data-action="screen" title="Desligar a tela (o som continua)">
+            <svg class="ic"><use href="#i-screen"/></svg>
+          </button>
+          <button class="btn round" data-action="inputs" title="Trocar entrada">
+            <span class="btn-label">HDMI</span>
+          </button>
+        </div>
+
+        <div class="rockers">
+          <div class="rocker">
+            <span class="rocker-title">VOL</span>
+            <button class="btn rocker-btn" data-cmd="VOLUMEUP" data-repeat title="Aumentar volume"><svg class="ic"><use href="#i-plus"/></svg></button>
+            <div class="readout" id="volume-readout">–</div>
+            <button class="btn rocker-btn" data-cmd="VOLUMEDOWN" data-repeat title="Diminuir volume"><svg class="ic"><use href="#i-minus"/></svg></button>
+          </div>
+          <button class="btn mute-btn" data-action="mute" title="Mudo"><svg class="ic"><use href="#i-mute"/></svg></button>
+          <div class="rocker">
+            <span class="rocker-title">CANAL</span>
+            <button class="btn rocker-btn" data-cmd="CHANNELUP" data-repeat title="Canal seguinte"><svg class="ic"><use href="#i-up"/></svg></button>
+            <div class="readout" id="channel-readout">–</div>
+            <button class="btn rocker-btn" data-cmd="CHANNELDOWN" data-repeat title="Canal anterior"><svg class="ic"><use href="#i-down"/></svg></button>
+          </div>
+        </div>
+
+        <div class="dpad">
+          <button class="btn dpad-btn up" data-cmd="UP" data-repeat title="Cima"><svg class="ic"><use href="#i-up"/></svg></button>
+          <button class="btn dpad-btn left" data-cmd="LEFT" data-repeat title="Esquerda"><svg class="ic"><use href="#i-left"/></svg></button>
+          <button class="btn dpad-ok" data-action="ok" title="OK">OK</button>
+          <button class="btn dpad-btn right" data-cmd="RIGHT" data-repeat title="Direita"><svg class="ic"><use href="#i-right"/></svg></button>
+          <button class="btn dpad-btn down" data-cmd="DOWN" data-repeat title="Baixo"><svg class="ic"><use href="#i-down"/></svg></button>
+        </div>
+
+        <div class="nav-row">
+          <button class="btn" data-cmd="BACK"><svg class="ic"><use href="#i-back"/></svg><span>Voltar</span></button>
+          <button class="btn" data-cmd="HOME"><svg class="ic"><use href="#i-home"/></svg><span>Início</span></button>
+          <button class="btn" data-cmd="MENU"><svg class="ic"><use href="#i-menu"/></svg><span>Menu</span></button>
+          <button class="btn" data-cmd="INFO"><svg class="ic"><use href="#i-info"/></svg><span>Info</span></button>
+          <button class="btn" data-cmd="EXIT"><svg class="ic"><use href="#i-exit"/></svg><span>Sair</span></button>
+        </div>
+
+        <div class="media-row">
+          <button class="btn" data-cmd="REWIND" data-repeat title="Retroceder"><svg class="ic"><use href="#i-rewind"/></svg></button>
+          <button class="btn" data-cmd="PLAY" title="Reproduzir"><svg class="ic"><use href="#i-play"/></svg></button>
+          <button class="btn" data-cmd="PAUSE" title="Pausar"><svg class="ic"><use href="#i-pause"/></svg></button>
+          <button class="btn" data-cmd="STOP" title="Parar"><svg class="ic"><use href="#i-stop"/></svg></button>
+          <button class="btn" data-cmd="FASTFORWARD" data-repeat title="Avançar"><svg class="ic"><use href="#i-ffwd"/></svg></button>
+        </div>
+
+        <div class="color-row">
+          <button class="btn color red" data-cmd="RED" title="Vermelho"></button>
+          <button class="btn color green" data-cmd="GREEN" title="Verde"></button>
+          <button class="btn color yellow" data-cmd="YELLOW" title="Amarelo"></button>
+          <button class="btn color blue" data-cmd="BLUE" title="Azul"></button>
+        </div>
+
+        <div class="quick-row">
+          <button class="btn" data-action="numpad"><svg class="ic"><use href="#i-hash"/></svg><span>Canais</span></button>
+          <button class="btn" data-tab="keyboard"><svg class="ic"><use href="#i-keyboard"/></svg><span>Teclado</span></button>
+          <button class="btn" data-tab="apps"><svg class="ic"><use href="#i-grid"/></svg><span>Apps</span></button>
+        </div>
+
+        <div id="numpad" class="numpad hidden">
+          <div class="numpad-display" id="numpad-display"><span class="muted">canal…</span></div>
+          <div class="numpad-grid">
+            <button class="btn num" data-digit="1">1</button>
+            <button class="btn num" data-digit="2">2</button>
+            <button class="btn num" data-digit="3">3</button>
+            <button class="btn num" data-digit="4">4</button>
+            <button class="btn num" data-digit="5">5</button>
+            <button class="btn num" data-digit="6">6</button>
+            <button class="btn num" data-digit="7">7</button>
+            <button class="btn num" data-digit="8">8</button>
+            <button class="btn num" data-digit="9">9</button>
+            <button class="btn num" data-digit="-">–</button>
+            <button class="btn num" data-digit="0">0</button>
+            <button class="btn num" data-action="num-back"><svg class="ic"><use href="#i-backspace"/></svg></button>
+            <button class="btn primary num-ok" data-action="num-ok">Ir para o canal</button>
+          </div>
+          <p class="hint muted small">Digite o número e toque em <strong>Ir</strong> (ex.: <code>7</code> ou <code>7-1</code>).</p>
+        </div>
+      </section>
+
+      <section id="tab-keyboard" class="tab-panel hidden">
+        <h2 class="panel-title">Teclado para a TV</h2>
+        <p class="hint muted small">Antes de enviar, deixe o campo de texto <strong>aberto e selecionado na TV</strong> (busca, senha de Wi‑Fi, nome de usuário...).</p>
+        <textarea id="text-input" rows="3" placeholder="Digite o texto aqui…" autocomplete="off" autocapitalize="sentences" spellcheck="false"></textarea>
+        <div class="kb-row">
+          <button class="btn primary grow" data-action="send-text"><svg class="ic"><use href="#i-send"/></svg><span>Enviar texto</span></button>
+          <button class="btn" data-action="enter-key"><svg class="ic"><use href="#i-enter"/></svg><span>Enter</span></button>
+        </div>
+        <div class="kb-row">
+          <button class="btn grow" data-action="del-1"><svg class="ic"><use href="#i-backspace"/></svg><span>Apagar 1</span></button>
+          <button class="btn grow" data-action="del-10">Apagar 10</button>
+          <button class="btn grow" data-action="del-all">Limpar campo</button>
+        </div>
+        <p class="hint muted small">Dica: o texto é inserido na posição do cursor da TV. Use “Apagar” para corrigir.</p>
+      </section>
+
+      <section id="tab-apps" class="tab-panel hidden">
+        <h2 class="panel-title">Apps</h2>
+        <div class="search-wrap">
+          <svg class="ic"><use href="#i-search"/></svg>
+          <input id="app-search" type="search" placeholder="Buscar app…" autocomplete="off">
+        </div>
+        <p id="apps-note" class="hint muted small"></p>
+        <div id="apps-grid" class="apps-grid"></div>
+
+        <div class="section-head">
+          <h2 class="panel-title">Canais</h2>
+          <span id="channels-count" class="muted small"></span>
+        </div>
+        <div class="search-wrap">
+          <svg class="ic"><use href="#i-search"/></svg>
+          <input id="ch-search" type="search" placeholder="Buscar canal pelo nome ou número…" autocomplete="off">
+        </div>
+        <div id="channels-list" class="list"></div>
+
+        <h2 class="panel-title">Entradas</h2>
+        <div id="inputs-grid" class="apps-grid"></div>
+      </section>
+
+    </main>
+
+    <nav class="tabbar">
+      <button data-tab="remote" class="active"><svg class="ic"><use href="#i-tv"/></svg><span>Controle</span></button>
+      <button data-tab="keyboard"><svg class="ic"><use href="#i-keyboard"/></svg><span>Teclado</span></button>
+      <button data-tab="apps"><svg class="ic"><use href="#i-grid"/></svg><span>Apps</span></button>
+    </nav>
+  </section>
+
+  <!-- ===================== Overlays ===================== -->
+  <div id="pairing-overlay" class="overlay hidden">
+    <div class="overlay-card">
+      <div class="spinner"></div>
+      <h2>Aguardando aprovação na TV</h2>
+      <p class="muted" id="pairing-msg">Na tela da TV, escolha <strong>“Sim / Aceitar”</strong> na mensagem que apareceu.</p>
+      <button id="btn-cancel-pair" class="btn ghost">Cancelar</button>
+    </div>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true">
+      <header class="modal-head">
+        <h2 id="modal-title">Título</h2>
+        <button class="icon-btn" data-modal-close title="Fechar"><svg class="ic"><use href="#i-exit"/></svg></button>
+      </header>
+      <div class="modal-body" id="modal-body"></div>
+      <footer class="modal-foot" id="modal-foot"></footer>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts"></div>
+</div>
+
+<script src="js/proxy.js" defer></script>
+<script src="js/ssap.js" defer></script>
+<script src="js/webos.js" defer></script>
+<script src="js/apps-data.js" defer></script>
+<script src="js/app.js" defer></script>
+</body>
+</html>
