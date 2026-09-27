@@ -329,6 +329,28 @@
     return NS.hostIsLocal(location.hostname);
   }
 
+  /* Se a página está sendo servida de um IP privado, usa a mesma faixa para
+   * completar IPs digitados só com o último número (ex.: "10" -> 192.168.1.10). */
+  function smartSubnetPrefix() {
+    var host = location.hostname;
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(host) && NS.hostIsLocal(host)) {
+      return host.split('.').slice(0, 3).join('.') + '.';
+    }
+    return '192.168.0.';
+  }
+
+  /* Permite abrir o app já conectando: /?tv=192.168.1.10  (ou ?tv=10 em modo local) */
+  function readTvFromUrl() {
+    var params;
+    try { params = new URLSearchParams(location.search); } catch (e) { return null; }
+    var tv = (params.get('tv') || '').trim();
+    if (!tv) return null;
+    if (/^\d{1,3}$/.test(tv)) tv = smartSubnetPrefix() + tv;
+    var port = parseInt(params.get('port') || '', 10) || null;
+    var name = (params.get('name') || '').trim();
+    return { host: tv, port: port, name: name || ('TV ' + tv) };
+  }
+
   /* Aviso fixo na tela inicial quando o app está publicado (origem pública) e
    * o navegador tem chance de bloquear o acesso à rede local. */
   function maybeShowLnaWarning() {
@@ -841,7 +863,7 @@
           onclick: async function () {
             var host = hostInput.value.trim();
             if (!host) { toast('Informe o endereço IP da TV.', 'warn'); return; }
-            if (/^\d+$/.test(host)) host = '192.168.0.' + host;
+            if (/^\d{1,3}$/.test(host)) host = smartSubnetPrefix() + host;
             var port = portInput.value.trim() ? parseInt(portInput.value.trim(), 10) : null;
             if (port !== null && (!port || port < 1 || port > 65535)) { toast('Porta inválida.', 'warn'); return; }
 
@@ -1125,6 +1147,30 @@
       state.installPrompt = ev;
       $('#btn-install').classList.remove('hidden');
     });
+
+    var fromUrl = readTvFromUrl();
+    if (fromUrl) {
+      var id = tvId(fromUrl.host, null);
+      var existing = findTv(id);
+      if (!existing) {
+        existing = {
+          id: id,
+          name: fromUrl.name,
+          host: fromUrl.host,
+          port: fromUrl.port,
+          secure: fromUrl.port ? fromUrl.port !== 3000 : true,
+          key: null,
+          proxy: false,
+          certOk: false,
+          model: ''
+        };
+        state.config.tvs.push(existing);
+        saveConfig();
+      }
+      log('TV recebida pela URL: ' + fromUrl.host, 'info');
+      connectTv(findTv(id));
+      return;
+    }
 
     var last = state.config.last ? findTv(state.config.last) : null;
     if (last) {
