@@ -85,9 +85,15 @@
       <p>Na primeira conexão aparece um aviso na TV pedindo permissão. Escolha <strong>“Sim/Aceitar”</strong>. O pareamento fica salvo neste navegador, então isso acontece só uma vez por aparelho.</p>
     </details>
     <details class="help">
-      <summary>A conexão falha com erro de certificado (site HTTPS)</summary>
-      <p>Este site é servido por HTTPS e a TV usa um certificado próprio. O navegador precisa confiar nele uma vez: abra <code>https://IP-DA-TV:3001</code> em outra aba e avance em <strong>Avançado → Continuar mesmo assim</strong>. Depois volte aqui e conecte de novo.</p>
-      <p>Se a sua TV for mais antiga e ainda aceitar conexões sem TLS, você também pode servir esta pasta por HTTP local (<code>npx serve</code> ou <code>python -m http.server</code>) e conectar na porta 3000.</p>
+      <summary>O site publicado não conecta no Chrome/Edge</summary>
+      <p>Desde o Chrome 142, o navegador bloqueia conexões de sites públicos para aparelhos da sua rede local (<strong>Local Network Access</strong>) — e para WebSocket não existe aviso de permissão: a conexão falha em silêncio. Não é problema da TV nem do app.</p>
+      <p><strong>Modo local (recomendado):</strong> na pasta do projeto rode <code>node serve.js</code> (ou dê dois cliques em <code>iniciar-servidor.cmd</code>) e abra o endereço <code>http://SEU-IP:8080</code> que aparece no terminal — no computador ou no celular, na mesma rede da TV.</p>
+      <p>Alternativas: usar Firefox (ainda não aplica essa restrição) ou configurar a política <code>LocalNetworkAllowedForUrls</code> para este site (avançado).</p>
+    </details>
+    <details class="help">
+      <summary>Erro de certificado da TV</summary>
+      <p>A TV usa um certificado próprio. No modo local (ou em navegadores que não bloqueiam a rede local), confirme o certificado uma vez: abra <code>https://IP-DA-TV:3001</code>, escolha <strong>Avançado → Continuar mesmo assim</strong> — a TV mostra uma página com “Hello World”, isso é normal e confirma que o serviço está ativo — e conecte de novo.</p>
+      <p>Se a sua TV for mais antiga e ainda aceitar a porta 3000 (sem TLS), nem é preciso mexer com certificado.</p>
     </details>
     <details class="help">
       <summary>Não consigo ligar a TV pelo navegador</summary>
@@ -95,7 +101,8 @@
     </details>
     <details class="help">
       <summary>Compatibilidade</summary>
-      <p>Chrome/Edge no desktop ou Android funcionam melhor (aceitam o certificado da TV). Safari/iPhone costuma bloquear conexões com certificado próprio — nesse caso use o modo HTTP local.</p>
+      <p>Chrome/Edge no desktop ou Android funcionam melhor (aceitam o certificado da TV). Safari/iPhone costuma bloquear conexões com certificado próprio — nesse caso use o modo local se a TV aceitar a porta 3000.</p>
+      <p>Pelo endereço publicado do GitHub Pages, Chrome e Edge modernos bloqueiam o acesso à rede local (veja o tópico acima); o modo local resolve.</p>
     </details>
 
     <p class="footer-note muted small">Seus dados (IP, nome da TV e chave de pareamento) ficam apenas neste navegador.</p>

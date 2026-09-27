@@ -213,6 +213,17 @@ body {
 
 .footer-note { text-align: center; padding: 8px 22px 26px; }
 
+.warn-card {
+  margin: 16px 18px 0;
+  padding: 14px;
+  border: 1px solid rgba(245, 197, 66, .45);
+  border-radius: var(--radius);
+  background: rgba(245, 197, 66, .08);
+}
+.warn-card strong { display: block; margin-bottom: 6px; font-size: 14px; color: #ffd479; }
+.warn-card p { margin: 0 0 8px; font-size: 13px; color: #d6dde7; }
+.warn-card p:last-child { margin-bottom: 0; }
+
 /* ---------------- topbar ---------------- */
 
 .topbar {

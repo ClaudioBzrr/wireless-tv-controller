@@ -92,21 +92,27 @@
 
   SSAPClient.prototype._transportCandidates = function () {
     var pageSecure = typeof location !== 'undefined' && location.protocol === 'https:';
-    var list = [];
+    var transports;
     if (this.port) {
-      list.push({ secure: !!this.secure, port: this.port, proxy: false });
-      list.push({ secure: !!this.secure, port: this.port, proxy: true });
+      transports = [{ secure: !!this.secure, port: this.port }];
     } else if (pageSecure) {
-      list.push({ secure: true, port: 3001, proxy: false });
-      list.push({ secure: true, port: 3001, proxy: true });
+      // Página em HTTPS: ws:// seria bloqueado como conteúdo misto.
+      transports = [{ secure: true, port: 3001 }];
     } else {
-      list.push({ secure: false, port: 3000, proxy: false });
-      list.push({ secure: true, port: 3001, proxy: false });
-      list.push({ secure: false, port: 3000, proxy: true });
-      list.push({ secure: true, port: 3001, proxy: true });
+      // Página local em HTTP: tenta a porta sem TLS (mais compatível, sem
+      // certificado) e depois a TLS.
+      transports = [{ secure: false, port: 3000 }, { secure: true, port: 3001 }];
     }
-    if (this.useProxy) {
-      list.sort(function (a, b) { return (b.proxy === true) - (a.proxy === true); });
+
+    var list = [];
+    for (var i = 0; i < transports.length; i++) {
+      var t = transports[i];
+      var pair = [
+        { secure: t.secure, port: t.port, proxy: false },
+        { secure: t.secure, port: t.port, proxy: true }
+      ];
+      if (this.useProxy) pair.reverse();
+      list = list.concat(pair);
     }
     return list;
   };
@@ -611,4 +617,20 @@
   };
 
   NS.SSAPClient = SSAPClient;
+
+  /* Endereços considerados "rede local" (mesma faixa da TV). Usado para avisar
+   * sobre o Local Network Access do Chrome, que bloqueia conexões de sites
+   * públicos para IPs privados. */
+  NS.hostIsLocal = function (host) {
+    if (!host) return false;
+    var h = String(host).toLowerCase();
+    if (h === 'localhost' || h === '127.0.0.1' || h === '::1' || h === '[::1]') return true;
+    if (/\.local$/.test(h) || /\.lan$/.test(h) || /\.home\.arpa$/.test(h)) return true;
+    if (/^127\./.test(h)) return true;
+    if (/^10\./.test(h)) return true;
+    if (/^192\.168\./.test(h)) return true;
+    if (/^172\.(1[6-9]|2\d|3[01])\./.test(h)) return true;
+    if (/^169\.254\./.test(h)) return true;
+    return false;
+  };
 })();

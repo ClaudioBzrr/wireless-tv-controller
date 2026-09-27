@@ -324,40 +324,83 @@
     return 'https://' + tv.host + ':' + port + '/';
   }
 
+  function pageOriginIsLocal() {
+    if (location.protocol === 'file:') return true;
+    return NS.hostIsLocal(location.hostname);
+  }
+
+  /* Aviso fixo na tela inicial quando o app está publicado (origem pública) e
+   * o navegador tem chance de bloquear o acesso à rede local. */
+  function maybeShowLnaWarning() {
+    if (!lnaBlockLikely()) return;
+    var screen = $('#screen-connect');
+    var hero = screen.querySelector('.hero');
+    var card = el('div', { class: 'warn-card' }, [
+      el('strong', { text: 'Atenção: este navegador pode bloquear a conexão com a TV' }),
+      el('p', { text: 'Chrome/Edge 142+ não permitem que páginas públicas (GitHub Pages) falem com aparelhos da sua rede local, e para WebSocket não existe aviso de permissão — a conexão falha em silêncio. Enquanto estiver por aqui, o controle pode não conectar.' }),
+      el('p', { text: 'Modo local (recomendado): rode “node serve.js” na pasta do projeto e abra o endereço http://SEU-IP:8080 no computador ou no celular.' })
+    ]);
+    if (hero && hero.nextSibling) screen.insertBefore(card, hero.nextSibling);
+    else screen.insertBefore(card, screen.firstChild);
+  }
+
+  function chromiumMajor() {
+    var m = navigator.userAgent.match(/(?:Chrom(?:e|ium)|Edg|OPR|Brave)\/(\d+)/);
+    return m ? parseInt(m[1], 10) : 0;
+  }
+
+  /* O Chrome/Edge restringem conexões de páginas públicas para IPs da rede
+   * local (Local Network Access). Para WebSocket não existe prompt: falha mudo. */
+  function lnaBlockLikely() {
+    return location.protocol === 'https:' && !pageOriginIsLocal() && chromiumMajor() >= 142;
+  }
+
   function showConnectErrorModal(err, tv) {
     var pageSecure = location.protocol === 'https:';
     var attempts = err.attempts || [];
     var fastFail = attempts.some(function (a) { return a.certSuspected; });
     var isApple = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    var lna = lnaBlockLikely();
 
     openModal({
       title: 'Não foi possível conectar',
       build: function (body, foot) {
         body.appendChild(el('p', { text: 'Erro: ' + err.message }));
 
-        if (pageSecure || fastFail) {
+        if (lna) {
           body.appendChild(el('p', {
-            text: 'A causa mais comum é o certificado da TV: este site é HTTPS e a TV usa um certificado próprio. O navegador precisa que você confirme esse certificado uma vez.'
+            text: 'Causa provável: o Chrome/Edge 142+ bloqueia conexões de sites públicos (como o GitHub Pages) para aparelhos da sua rede local — é o recurso "Local Network Access". Para WebSocket não aparece aviso de permissão: a conexão simplesmente falha.'
           }));
-          var steps = el('ol', { class: 'hint' }, [
-            el('li', { text: 'Toque em “Abrir certificado da TV” (abre https://' + tv.host + ':3001).' }),
-            el('li', { text: 'No aviso do navegador, escolha “Avançado” → “Continuar mesmo assim”.' }),
-            el('li', { text: 'Volte para esta aba e toque em “Tentar de novo”.' })
-          ]);
-          body.appendChild(steps);
+          body.appendChild(localModeInstructions());
+          body.appendChild(el('p', {
+            class: 'hint muted small',
+            text: 'Alternativas: usar Firefox (ainda não aplica essa restrição) ou configurar a política "LocalNetworkAllowedForUrls" para ' + location.origin + ' (avançado, exige editar o registro do Windows e reiniciar o navegador).'
+          }));
+          body.appendChild(el('p', { class: 'hint', text: 'Se você já está no modo local e ainda falha, o motivo mais provável é o certificado da TV:' }));
+          body.appendChild(certSteps(tv));
+        } else if (pageSecure || fastFail) {
+          body.appendChild(el('p', {
+            text: 'A causa mais comum é o certificado da TV: se ela exige conexão segura (porta 3001), usa um certificado próprio que o navegador precisa confirmar uma vez neste aparelho.'
+          }));
+          body.appendChild(certSteps(tv));
           if (isApple) {
             body.appendChild(el('p', {
               class: 'hint muted small',
-              text: 'No iPhone/iPad o Safari normalmente não permite aceitar esse certificado. Use Chrome/Edge em um computador ou Android, ou sirva a pasta por HTTP local (ngrok serve/rede local).'
+              text: 'No iPhone/iPad o Safari normalmente não permite aceitar esse certificado. Use Chrome/Edge em um computador ou Android, ou rode o modo local (node serve.js) e abra pelo endereço da rede.'
             }));
           }
+        } else if (isApple) {
+          body.appendChild(el('p', {
+            class: 'hint muted small',
+            text: 'No iPhone/iPad o Safari bloqueia conexões com certificado próprio. Para TVs que aceitam ws:// (porta 3000) funciona; para as que exigem TLS, use Chrome/Edge no Android ou no computador.'
+          }));
         }
 
         if (tv.key) {
           body.appendChild(el('p', { class: 'hint muted small', text: 'Já existe uma chave de pareamento salva. Se você restaurou a TV ou ela recusou a conexão, use “Esquecer pareamento” nos ajustes e conecte de novo.' }));
         }
 
-        body.appendChild(el('p', { class: 'hint muted small', text: 'Detalhes técnicos: ' + attempts.map(function (a) { return a.url.replace(/\/\//, '//') + ' (' + (a.proxy ? 'proxy' : 'direto') + ', ' + a.elapsed + 'ms)'; }).join(' · ') }));
+        body.appendChild(el('p', { class: 'hint muted small', text: 'Detalhes técnicos: ' + attempts.map(function (a) { return a.url + ' (' + (a.proxy ? 'proxy' : 'direto') + ', ' + a.elapsed + 'ms)'; }).join(' · ') }));
 
         foot.appendChild(el('button', { class: 'btn primary', text: 'Abrir certificado da TV', onclick: function () { window.open(certUrl(tv), '_blank', 'noopener'); } }));
         foot.appendChild(el('button', { class: 'btn', text: 'Tentar de novo', onclick: function () { closeModal(); connectTv(tv); } }));
@@ -365,6 +408,26 @@
         foot.appendChild(el('button', { class: 'btn ghost', text: 'Escolher outra TV', onclick: function () { closeModal(); disconnect(); showScreen('connect'); renderConnectList(); } }));
       }
     });
+  }
+
+  function certSteps(tv) {
+    return el('ol', { class: 'hint' }, [
+      el('li', { text: 'Toque em “Abrir certificado da TV” (abre https://' + tv.host + ':3001).' }),
+      el('li', { text: 'No aviso do navegador, escolha “Avançado” → “Continuar mesmo assim” (a TV mostra uma página com “Hello World” — é normal).' }),
+      el('li', { text: 'Volte para esta aba e toque em “Tentar de novo”.' })
+    ]);
+  }
+
+  function localModeInstructions() {
+    return el('div', {}, [
+      el('p', { class: 'hint', text: 'Como usar o modo local (recomendado):' }),
+      el('ol', { class: 'hint' }, [
+        el('li', { text: 'No computador que está na mesma rede da TV, abra a pasta do projeto.' }),
+        el('li', { text: 'Rode “node serve.js” — ou dê dois cliques em “iniciar-servidor.cmd”.' }),
+        el('li', { text: 'O script mostra um endereço como http://192.168.0.10:8080. Abra esse endereço no computador ou no celular (mesma rede).' }),
+        el('li', { text: 'Adicione a TV pelo IP e conecte. Se a TV aceitar a porta 3000, nem é preciso mexer com certificado.' })
+      ])
+    ]);
   }
 
   /* ================= controle remoto ================= */
@@ -831,7 +894,7 @@
           el('dt', { text: 'Modelo' }), el('dd', { text: tv.model || '—' }),
           el('dt', { text: 'Conexão' }), el('dd', { text: client ? client.url() + (client.useProxy ? ' · proxy Origin:null' : ' · direto') : '—' }),
           el('dt', { text: 'Pareamento' }), el('dd', { text: tv.key ? 'salvo (client-key ' + String(tv.key).slice(0, 6) + '…)' : 'não pareado' }),
-          el('dt', { text: 'Página' }), el('dd', { text: location.protocol + ' · ' + (window.isSecureContext ? 'contexto seguro' : 'contexto inseguro') })
+          el('dt', { text: 'Página' }), el('dd', { text: location.protocol + ' · ' + (pageOriginIsLocal() ? 'origem local' : 'origem pública') + (lnaBlockLikely() ? ' · Chrome/Edge podem bloquear a rede local' : '') })
         ]));
 
         var toggle = el('input', { type: 'checkbox' });
@@ -859,8 +922,18 @@
       title: 'Ajuda e diagnóstico',
       build: function (body) {
         body.appendChild(el('details', { class: 'help' }, [
+          el('summary', { text: 'O site publicado (GitHub Pages) não conecta no Chrome/Edge' }),
+          el('p', { text: 'Desde o Chrome 142 (out/2025) o navegador bloqueia conexões de sites públicos para a rede local ("Local Network Access"). Em WebSocket não existe aviso de permissão: a conexão falha em silêncio. Isso não é um problema da TV nem do app.' }),
+          el('p', { text: 'Solução recomendada: usar o app em modo local — na pasta do projeto rode "node serve.js" (ou dê dois cliques em iniciar-servidor.cmd) e abra o endereço http://SEU-IP:8080 no computador ou celular. A página passa a ser local, então o navegador permite falar com a TV.' }),
+          el('p', { text: 'Alternativas: usar Firefox (ainda não aplica essa regra) ou configurar a política "LocalNetworkAllowedForUrls" para ' + location.origin + ' (avançado).' })
+        ]));
+        body.appendChild(el('details', { class: 'help' }, [
           el('summary', { text: 'A TV não conecta / erro de certificado' }),
-          el('p', { text: 'Abra https://' + (state.tv ? state.tv.host : 'IP-DA-TV') + ':3001 no navegador, aceite o certificado (Avançado → Continuar) e volte aqui para reconectar. No iPhone o Safari costuma não permitir esse aceite; use Chrome/Edge no computador/Android.' })
+          el('p', { text: 'Abra https://' + (state.tv ? state.tv.host : 'IP-DA-TV') + ':3001 no navegador, aceite o certificado (Avançado → Continuar mesmo assim) e volte aqui para reconectar. A TV mostra uma página com “Hello World” — isso é normal e confirma que o serviço está ativo. No iPhone o Safari costuma não permitir esse aceite; use Chrome/Edge no computador/Android.' })
+        ]));
+        body.appendChild(el('details', { class: 'help' }, [
+          el('summary', { text: 'Modo local, sem certificado e sem servidor de verdade' }),
+          el('p', { text: 'Se a sua TV aceita conexões sem TLS (firmware mais antigo), basta servir esta pasta por HTTP: rode "node serve.js" (ou "npx serve", ou python -m http.server) e abra o endereço local — o app tenta ws://IP:3000 automaticamente. Também funciona abrindo o index.html direto do disco (file://).' })
         ]));
         body.appendChild(el('details', { class: 'help' }, [
           el('summary', { text: 'Alguns botões não respondem (setas, OK, voltar)' }),
@@ -869,10 +942,6 @@
         body.appendChild(el('details', { class: 'help' }, [
           el('summary', { text: 'Não consigo ligar a TV' }),
           el('p', { text: 'Navegadores não enviam Wake-on-LAN (UDP). Com “Quick Start+” ativo a TV pode aceitar o comando de ligar; senão, use o controle físico. Desligar sempre funciona.' })
-        ]));
-        body.appendChild(el('details', { class: 'help' }, [
-          el('summary', { text: 'Usar sem HTTPS (sem certificado)' }),
-          el('p', { text: 'Se sua TV aceita conexões sem TLS (firmware antigo), sirva esta pasta por HTTP: por exemplo “npx serve” na pasta do projeto ou python -m http.server, e abra pelo endereço local. O app então tenta ws://IP:3000 automaticamente.' })
         ]));
 
         body.appendChild(el('h3', { class: 'panel-title', text: 'Diagnóstico' }));
@@ -1047,6 +1116,7 @@
     bindUI();
     renderNumpad();
     renderConnectList();
+    maybeShowLnaWarning();
     registerServiceWorker();
     log('Controle TV iniciado em ' + location.href, 'debug');
 
